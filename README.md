@@ -67,4 +67,4 @@ Render's free web service spins down after 15 minutes without requests, so the f
 
 ## AI usage disclosure
 
-ChatGPT assisted with reviewing the assignment and editing the implementation and documentation. The applicant should review the code and include the share link or export for the relevant AI conversation when submitting, as required by the assignment.
+AI Usage Disclosure: I used ChatGPT to support my review of the assignment and to assist with implementation and documentation. I reviewed the resulting work and take responsibility for the submitted solution.
