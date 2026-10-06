@@ -1,0 +1,230 @@
+<main class="shell">
+  <div
+    class="app-content"
+    [attr.inert]="detailId ? '' : null"
+    [attr.aria-hidden]="detailId ? 'true' : null"
+  >
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">D</div>
+      <div>
+        <div class="brand">DareAISearch</div>
+        <div class="subbrand">FRONTEND ENGINEERING ASSIGNMENT</div>
+      </div>
+      <span class="api-pill"><span class="pulse" aria-hidden="true"></span>Mock API</span>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">OPERATIONS / ORDERS</p>
+        <h1 id="page-title">Order explorer</h1>
+        <p class="lede">Search, inspect and manage a large order dataset without losing your place.</p>
+      </div>
+      <div class="metric">
+        <span class="metric-label">DATASET</span>
+        <strong>12,000</strong>
+        <span>mock records</span>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Order search results">
+      <div class="toolbar">
+        <label class="search-wrap">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input
+            #searchInput
+            [formControl]="searchControl"
+            placeholder="Search order, customer or email…"
+            autocomplete="off"
+            aria-label="Search orders by order ID, customer, or email"
+          >
+          <kbd>Ctrl/⌘ K</kbd>
+        </label>
+        <label class="filter-label">
+          STATUS
+          <select
+            #statusFilter
+            [value]="state.status"
+            (change)="setStatus(statusFilter.value)"
+            aria-label="Filter by status"
+          >
+            <option value="">All statuses</option>
+            <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+          </select>
+        </label>
+        <button class="ghost-btn" type="button" (click)="reset()">Reset</button>
+      </div>
+
+      <div class="table-meta">
+        <div *ngIf="!loading && !error">
+          <strong>{{ total | number }}</strong> results
+          <span class="muted">· Page {{ state.page }} of {{ pageCount }}</span>
+        </div>
+        <label class="sort-label">
+          SORT BY
+          <select
+            #sortSelect
+            [value]="state.sort"
+            (change)="setSort(sortSelect.value)"
+            aria-label="Sort orders by"
+          >
+            <option value="date">Order date</option>
+            <option value="total">Order total</option>
+            <option value="customer">Customer</option>
+            <option value="status">Status</option>
+          </select>
+          <button
+            class="sort-dir"
+            type="button"
+            [attr.aria-label]="'Sort direction: ' + state.direction"
+            (click)="toggleDirection()"
+          >{{ state.direction === 'asc' ? '↑' : '↓' }}</button>
+        </label>
+      </div>
+
+      <div *ngIf="loading" class="loading" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        Fetching the latest orders…
+      </div>
+      <div *ngIf="error && !loading" class="error-state" role="alert">
+        <div class="error-icon" aria-hidden="true">!</div>
+        <div>
+          <strong>We couldn't load these orders.</strong>
+          <p>{{ error }}</p>
+          <button class="primary-btn" type="button" (click)="retry()">Try again</button>
+        </div>
+      </div>
+      <div *ngIf="!loading && !error && rows.length === 0" class="empty-state">
+        <span aria-hidden="true">⌕</span>
+        <strong>No matching orders</strong>
+        <p>Try changing your search or filters.</p>
+        <button class="ghost-btn" type="button" (click)="reset()">Clear filters</button>
+      </div>
+
+      <div class="table-scroll" *ngIf="!loading && !error && rows.length">
+        <cdk-virtual-scroll-viewport
+          class="orders-viewport"
+          [itemSize]="rowHeight"
+          minBufferPx="480"
+          maxBufferPx="960"
+          tabindex="0"
+          role="region"
+          aria-label="Virtualized order results. Use the arrow keys or Page Up and Page Down to scroll."
+        >
+          <table [attr.aria-rowcount]="total + 1">
+            <caption class="sr-only">Orders matching the current search and filters</caption>
+            <thead>
+              <tr>
+                <th scope="col">ORDER ID</th>
+                <th scope="col" [attr.aria-sort]="sortAria('customer')">CUSTOMER</th>
+                <th scope="col" [attr.aria-sort]="sortAria('status')">STATUS</th>
+                <th scope="col" [attr.aria-sort]="sortAria('total')">
+                  <button class="th-button" type="button" (click)="setSort('total')">TOTAL</button>
+                </th>
+                <th scope="col" [attr.aria-sort]="sortAria('date')">
+                  <button class="th-button" type="button" (click)="setSort('date')">ORDER DATE</button>
+                </th>
+                <th scope="col">ITEMS</th>
+                <th scope="col"><span class="sr-only">Open details</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *cdkVirtualFor="let order of rows; let index = index; trackBy: trackOrder"
+                tabindex="0"
+                [attr.aria-rowindex]="(state.page - 1) * pageSize + index + 2"
+                [attr.aria-label]="'Open order ' + order.id + ' for ' + order.customer"
+                (click)="openOrder(order, $event.currentTarget)"
+                (keydown.enter)="openOrder(order, $event.currentTarget)"
+                (keydown.space)="openOrder(order, $event.currentTarget); $event.preventDefault()"
+              >
+                <td class="order-id">{{ order.id }}</td>
+                <td>
+                  <div class="customer">{{ order.customer }}</div>
+                  <div class="email">{{ order.email }}</div>
+                </td>
+                <td>
+                  <span class="status" [ngClass]="statusClass(order.status)">
+                    <span class="status-dot" aria-hidden="true"></span>{{ order.status }}
+                  </span>
+                </td>
+                <td class="money">{{ order.total | currency:'USD':'symbol':'1.2-2' }}</td>
+                <td>{{ order.date | date:'MMM d, y' }}</td>
+                <td>{{ order.items }}</td>
+                <td class="chevron" aria-hidden="true">↗</td>
+              </tr>
+            </tbody>
+          </table>
+        </cdk-virtual-scroll-viewport>
+      </div>
+
+      <footer class="pagination" *ngIf="!loading && !error && rows.length">
+        <span class="muted">Showing {{ startIndex }}–{{ endIndex }} of {{ total | number }}</span>
+        <div class="page-controls">
+          <button
+            class="page-btn"
+            type="button"
+            [disabled]="state.page <= 1"
+            (click)="setPage(state.page - 1)"
+            aria-label="Previous page"
+          >←</button>
+          <span>Page <strong>{{ state.page }}</strong> / {{ pageCount }}</span>
+          <button
+            class="page-btn"
+            type="button"
+            [disabled]="state.page >= pageCount"
+            (click)="setPage(state.page + 1)"
+            aria-label="Next page"
+          >→</button>
+        </div>
+      </footer>
+    </section>
+    <p class="footnote">
+      Built for resilience <span>·</span> URL-synced state <span>·</span>
+      cancellable requests <span>·</span> accessible interactions
+    </p>
+  </div>
+
+  <div class="backdrop" *ngIf="detailId" (click)="closeDetails()" aria-hidden="true"></div>
+  <aside
+    #detailDrawer
+    class="detail-drawer"
+    *ngIf="detailId"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="detail-title"
+    tabindex="-1"
+  >
+    <div class="drawer-head">
+      <div>
+        <p class="eyebrow">ORDER DETAILS</p>
+        <h2 id="detail-title">{{ selected?.id || detailId }}</h2>
+      </div>
+      <button class="close-btn" type="button" aria-label="Close order details" (click)="closeDetails()">×</button>
+    </div>
+    <div *ngIf="detailLoading" class="detail-message" role="status">
+      <span class="spinner" aria-hidden="true"></span>Loading order details…
+    </div>
+    <div *ngIf="detailError && !detailLoading" class="detail-message detail-error" role="alert">
+      <p>{{ detailError }}</p>
+      <button class="primary-btn" type="button" (click)="retryDetail()">Try again</button>
+    </div>
+    <ng-container *ngIf="selected">
+      <span class="status" [ngClass]="statusClass(selected.status)">
+        <span class="status-dot" aria-hidden="true"></span>{{ selected.status }}
+      </span>
+      <div class="detail-total">
+        <span>Order total</span>
+        <strong>{{ selected.total | currency:'USD' }}</strong>
+      </div>
+      <div class="detail-list">
+        <div><span>Customer</span><strong>{{ selected.customer }}</strong></div>
+        <div><span>Email</span><strong>{{ selected.email }}</strong></div>
+        <div><span>Order date</span><strong>{{ selected.date | date:'longDate' }}</strong></div>
+        <div><span>Items</span><strong>{{ selected.items }}</strong></div>
+      </div>
+      <p class="drawer-note">This detail view is deep-linkable. Closing it returns to your previous list state.</p>
+    </ng-container>
+    <button class="primary-btn full-btn" type="button" (click)="closeDetails()">Back to orders</button>
+  </aside>
+  <div class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</div>
+</main>

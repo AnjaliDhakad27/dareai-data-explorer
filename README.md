@@ -19,7 +19,7 @@ npm start
 
 Open [http://localhost:4200](http://localhost:4200). Angular proxies `/api` requests to the mock server on port 3001 via `proxy.conf.json`.
 
-Run the focused tests with `npm test` and create a production build with `npm run build`.
+Run the focused tests with `npm test` and create a production build with `npm run build`. Use a supported Node version: 20.19+, 22.12+, or 24+ (Node 22 LTS recommended).
 
 ## What it demonstrates
 
@@ -33,29 +33,28 @@ Run the focused tests with `npm test` and create a production build with `npm ru
 
 ## Architecture and decisions
 
-- **Angular standalone UI:** the app stays small and does not need a separate feature-module hierarchy.
+- **Angular standalone UI:** `app.component.ts` holds view behavior and `app.component.html` holds the template, keeping markup separate from component logic without adding unnecessary feature modules.
 - **Express mock API:** `mock-api/server.js` generates the dataset and owns search, filter, sort, and pagination. No large dataset is shipped to or processed by the browser.
-- **URL as list state:** `query-state.ts` parses URL parameters with safe defaults. `orderId` is layered onto those parameters, preserving the list view while the detail drawer is open.
+- **URL as list state:** `query-state.ts` parses URL parameters with typed, safe defaults. A pending text search is cancelled if browser navigation restores another URL state. `search-query.ts` owns the cancellable debounce behavior and its focused test.
 - **Cancellation at the request boundary:** route query changes feed an RxJS `switchMap`; Angular `HttpClient` cancels/unsubscribes superseded requests. Typing immediately clears current results and cancels the active request, then waits 300 ms before updating the URL and requesting new results.
 - **Honest failures:** the list error path clears rows and totals, and a retry starts a fresh request. The UI does not present older rows as current after a failed query.
 - **Bounded rendering:** pagination returns 1,000 records at a time, while CDK virtual scrolling only renders the viewport and nearby rows. Page navigation remains available and its index is shareable in the URL.
 
 ## Tests
 
-The Vitest suite covers query-string restoration, invalid URL defaults, and the race-condition invariant that a superseded observable response is ignored. The real HTTP/API integration and manual accessibility checks should also be exercised before recording the demo.
+The Vitest suite covers query-string restoration and invalid values, stale-response cancellation, route changes cancelling pending search, server-side search/filter/sort/pagination over 12,000 orders, stable health checks, and the simulated API failure path. Before recording the demo, check keyboard navigation and screen-reader announcements manually, and trigger a simulated API failure with a retry.
 
 ## Free deployment (Render)
 
-The repository includes a `render.yaml` Blueprint for a single free Node web service. It builds Angular and serves the frontend and `/api` from the same Express process. Push this project to a GitHub repository, then in Render choose **New + > Blueprint**, connect the repository, and deploy the detected `render.yaml` service. Render assigns a public `onrender.com` URL.
+The repository includes a `render.yaml` Blueprint for a single free Node web service. It builds Angular and serves the frontend and `/api` from the same Express process. Its health check bypasses simulated API latency and failures. Push this project to a GitHub repository, then in Render choose **New + > Blueprint**, connect the repository, and deploy the detected `render.yaml` service. Render assigns a public `onrender.com` URL.
 
 Render's free web service spins down after 15 minutes without requests, so the first visit after inactivity may take about a minute to start. This app's generated orders are held in memory and reset whenever the service restarts. These limits make the free service suitable for a portfolio/demo deployment, not persistent production data.
 
-## Tradeoffs and deployment
+## Tradeoffs
 
-- This is a local mock API; its generated in-memory data resets when the server restarts.
-- The app and API run as separate local processes. A production deployment needs a host that can run the Express API (or a serverless adaptation) and route `/api` to it. Static hosting alone will not serve the mock API.
-- The drawer is deep-linkable and dismissible while retaining list query parameters; Escape closes it, keyboard focus stays inside, and focus returns to the invoking row.
-- The assignment asks for a live deployment, a public repository, and an optional short demo video. Deploy this full-stack setup to a suitable free-tier host, publish the repository publicly, and record a short walkthrough including a simulated API failure before submission.
+- Generated orders live in memory and reset when the service restarts. This is intentionally a mock API, not persistent order storage.
+- Render free instances sleep after 15 idle minutes and the first request after sleep may take about a minute.
+- The detail drawer is deep-linkable and dismissible while retaining query parameters and restoring the invoking row focus and virtual scroll offset.
 
 ## Sources and references
 
@@ -64,6 +63,7 @@ Render's free web service spins down after 15 minutes without requests, so the f
 - [RxJS `switchMap`](https://rxjs.dev/api/operators/switchMap)
 - [Express](https://expressjs.com/)
 - [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
+- [Render free services](https://render.com/docs/free)
 
 ## AI usage disclosure
 

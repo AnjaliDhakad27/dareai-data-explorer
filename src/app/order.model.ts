@@ -1,8 +1,14 @@
+export const ORDER_STATUSES = ['Processing', 'Shipped', 'Delivered', 'Cancelled'] as const;
+export type OrderStatus = typeof ORDER_STATUSES[number];
+
+export const ORDER_SORT_FIELDS = ['date', 'total', 'customer', 'status'] as const;
+export type OrderSortField = typeof ORDER_SORT_FIELDS[number];
+
 export interface Order {
   id: string;
   customer: string;
   email: string;
-  status: 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+  status: OrderStatus;
   total: number;
   date: string;
   items: number;
@@ -13,10 +19,11 @@ export interface OrderResponse {
   page: number;
   pageSize: number;
 }
+
 export interface QueryState {
   q: string;
-  status: string;
-  sort: string;
+  status: OrderStatus | '';
+  sort: OrderSortField;
   direction: 'asc' | 'desc';
   page: number;
 }

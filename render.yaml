@@ -5,4 +5,4 @@ services:
     plan: free
     buildCommand: npm ci && npm run build
     startCommand: node mock-api/server.js
-    healthCheckPath: /api/orders
+    healthCheckPath: /health

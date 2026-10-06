@@ -6,6 +6,7 @@
 html,body{height:100%;overflow:hidden}.shell{height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:12px}.topbar{flex:0 0 82px}.intro{flex:0 0 auto;padding:25px 0 20px}.panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.toolbar,.table-meta,.pagination{flex:0 0 auto}.table-scroll{position:relative;flex:1 1 auto;min-height:0;overflow:hidden}.orders-viewport{position:absolute;inset:0;height:auto;width:auto;max-width:none;overflow:auto}.orders-viewport tbody tr{height:62px}.loading,.empty-state,.error-state{min-height:0;flex:1 1 auto}.footnote{flex:0 0 auto}.detail-drawer{overflow-y:auto}
 @media(max-width:760px){.shell{padding-bottom:8px}.topbar{flex-basis:70px}.intro{padding:16px 0 14px}.toolbar{flex:0 0 auto}.table-scroll{min-height:100px}.footnote{padding:8px 0}}
 @media(max-height:560px){.intro{padding:10px 0}.lede,.metric,.footnote{display:none}.topbar{flex-basis:62px}.toolbar{padding-top:10px;padding-bottom:10px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 /* Let the application content participate in the viewport flex layout. */
 .app-content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
 .table-scroll{display:flex;flex-direction:column}
