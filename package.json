@@ -1,0 +1,34 @@
+{
+  "name": "dareai-data-explorer",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
+  },
+  "scripts": {
+    "start": "ng serve --proxy-config proxy.conf.json",
+    "api": "node mock-api/server.js",
+    "test": "vitest run",
+    "build": "ng build"
+  },
+  "dependencies": {
+    "@angular/animations": "20.0.0",
+    "@angular/cdk": "20.0.0",
+    "@angular/common": "20.0.0",
+    "@angular/compiler": "20.0.0",
+    "@angular/core": "20.0.0",
+    "@angular/forms": "20.0.0",
+    "@angular/platform-browser": "20.0.0",
+    "@angular/router": "20.0.0",
+    "express": "5.1.0",
+    "rxjs": "7.8.2",
+    "zone.js": "0.15.1"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "20.0.0",
+    "@angular/cli": "20.0.0",
+    "@angular/compiler-cli": "20.0.0",
+    "typescript": "~5.8.0",
+    "vitest": "3.2.4"
+  }
+}

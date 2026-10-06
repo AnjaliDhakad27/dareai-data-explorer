@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: dareai-data-explorer
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: node mock-api/server.js
+    healthCheckPath: /api/orders
